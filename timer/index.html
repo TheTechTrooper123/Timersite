@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Timer</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: black;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .timer-container {
+            background: #ffffff;
+            padding: 20px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .inputs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .inputs input {
+            width: 60px;
+            font-size: 18px;
+            text-align: center;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        #display {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: black;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #005bb5;
+        }
+    </style>
+    <link rel="stylesheet" href="../template.css">
+</head>
+
+<body>
+    <div class="timer-container">
+        <div class="inputs">
+            <input type="number" id="hours" placeholder="h" min="0">
+            <input type="number" id="minutes" placeholder="min" min="0" max="59">
+            <input type="number" id="seconds" placeholder="s" min="0" max="59">
+        </div>
+        <div id="display">00:00:00</div>
+        <button id="start">Start</button>
+        <button id="stop">Stopp</button>
+        <button id="reset">Reset</button>
+    </div>
+    <audio id="alarm" src="klingelton.mp3" preload="auto"></audio>
+    <script>
+        const display = document.getElementById('display');
+        const hoursInput = document.getElementById('hours');
+        const minutesInput = document.getElementById('minutes');
+        const secondsInput = document.getElementById('seconds');
+        const startButton = document.getElementById('start');
+        const stopButton = document.getElementById('stop');
+        const resetButton = document.getElementById('reset');
+        const alarmSound = document.getElementById('alarm');
+
+        let totalTime = 0;
+        let countdownInterval;
+
+        function updateDisplay(time) {
+            const hours = Math.floor(time / 3600);
+            const minutes = Math.floor((time % 3600) / 60);
+            const seconds = time % 60;
+            display.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function startCountdown() {
+            const h = parseInt(hoursInput.value) || 0;
+            const m = parseInt(minutesInput.value) || 0;
+            const s = parseInt(secondsInput.value) || 0;
+            totalTime = h * 3600 + m * 60 + s;
+
+            if (totalTime <= 0) return;
+
+            updateDisplay(totalTime);
+            countdownInterval = setInterval(() => {
+                totalTime--;
+                updateDisplay(totalTime);
+                if (totalTime <= 0) {
+                    clearInterval(countdownInterval);
+                    alarmSound.play();
+                }
+            }, 1000);
+        }
+
+        startButton.addEventListener('click', () => {
+            if (!countdownInterval) startCountdown();
+        });
+
+        stopButton.addEventListener('click', () => {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        });
+
+        resetButton.addEventListener('click', () => {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            totalTime = 0;
+            updateDisplay(0);
+            hoursInput.value = '';
+            minutesInput.value = '';
+            secondsInput.value = '';
+            alarmSound.pause();
+            alarmSound.currentTime = 0;
+        });
+    </script>
+</body>
+
+</html>

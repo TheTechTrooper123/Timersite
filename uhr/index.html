@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Atomuhr</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: black;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 20px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            min-width: 400px;
+            min-height: 200px;
+        }
+
+        .clock {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="clock" id="clock">00:00:00</div>
+        <select id="countrySelect">
+            <option value="local">Lokale Zeit</option>
+            <option value="America/New_York">USA (New York)</option>
+            <option value="Europe/London">Großbritannien (London)</option>
+            <option value="Europe/Berlin" selected>Deutschland (Berlin)</option>
+            <option value="Asia/Tokyo">Japan (Tokyo)</option>
+            <option value="Australia/Sydney">Australien (Sydney)</option>
+        </select>
+    </div>
+    <script>
+        const clockElement = document.getElementById('clock');
+        const countrySelect = document.getElementById('countrySelect');
+
+        function updateClock() {
+            const now = new Date();
+            let options = {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+
+            if (countrySelect.value !== 'local') {
+                options.timeZone = countrySelect.value;
+            }
+
+            const formatter = new Intl.DateTimeFormat('de-DE', options);
+            clockElement.textContent = formatter.format(now);
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        countrySelect.addEventListener('change', updateClock);
+    </script>
+</body>
+
+</html>

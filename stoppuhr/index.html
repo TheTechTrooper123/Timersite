@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Stoppuhr</title>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #f2f2f2;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .timer-container {
+            background: #fff;
+            padding: 20px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        #timer {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background-color: #007aff;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+    </style>
+    <link rel="stylesheet" href="../template.css">
+</head>
+
+<body>
+    <div class="timer-container">
+        <div id="timer">00:00:00</div>
+        <button id="start">Start</button>
+        <button id="stop">Stop</button>
+        <button id="reset">Reset</button>
+    </div>
+    <script>
+        const timerDisplay = document.getElementById('timer');
+        const startButton = document.getElementById('start');
+        const stopButton = document.getElementById('stop');
+        const resetButton = document.getElementById('reset');
+
+        let startTime, elapsedTime = 0, timerInterval;
+
+        function updateTimer() {
+            elapsedTime = Date.now() - startTime;
+            timerDisplay.textContent = timeToString(elapsedTime);
+        }
+
+        function timeToString(time) {
+            let hours = Math.floor(time / 3600000);
+            let minutes = Math.floor((time % 3600000) / 60000);
+            let seconds = Math.floor((time % 60000) / 1000);
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        startButton.addEventListener('click', () => {
+            if (!timerInterval) {
+                startTime = Date.now() - elapsedTime;
+                timerInterval = setInterval(updateTimer, 1000);
+            }
+        });
+
+        stopButton.addEventListener('click', () => {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        });
+
+        resetButton.addEventListener('click', () => {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            elapsedTime = 0;
+            timerDisplay.textContent = "00:00:00";
+        });
+    </script>
+</body>
+
+</html>

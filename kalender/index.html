@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kalender</title>
+    <link rel="stylesheet" href="../template.css">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: #ffffff;
+            color: #000;
+            padding: 20px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            min-width: 400px;
+            min-height: 400px;
+        }
+
+        .container.dark {
+            background: #333;
+            color: #fff;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        #toggleMode {
+            background-color: black;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        #toggleMode:hover {
+            background-color: #555;
+        }
+
+        .view-tabs {
+            margin-bottom: 20px;
+        }
+
+        .view-tabs button {
+            background-color: black;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            margin: 0 5px 5px 0;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .view-tabs button.active,
+        .view-tabs button:hover {
+            background-color: #555;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .navigation button {
+            background-color: black;
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .navigation button:hover {
+            background-color: #555;
+        }
+
+        #currentPeriod {
+            font-size: 16px;
+        }
+
+        /* Month view table styles */
+        table.month-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table.month-table th,
+        table.month-table td {
+            border: 1px solid #ddd;
+            width: 14.28%;
+            height: 80px;
+            vertical-align: top;
+            padding: 5px;
+        }
+
+        table.month-table th {
+            background-color: #f0f0f0;
+        }
+
+        .date-number {
+            font-weight: bold;
+        }
+
+        .holiday {
+            font-size: 12px;
+            color: red;
+        }
+
+        /* Week and Day view styles */
+        .week-view,
+        .day-view {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .week-day,
+        .day-detail {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container" id="calendarContainer">
+        <div class="header">
+            <h1>Kalender</h1>
+            <button id="toggleMode">Dark Mode</button>
+        </div>
+        <div class="view-tabs">
+            <button id="monthViewBtn" class="active">Monat</button>
+            <button id="weekViewBtn">Woche</button>
+            <button id="dayViewBtn">Tag</button>
+        </div>
+        <div class="navigation">
+            <button id="prevBtn">&lt; Zurück</button>
+            <span id="currentPeriod"></span>
+            <button id="nextBtn">Weiter &gt;</button>
+        </div>
+        <div id="calendarContent"></div>
+    </div>
+    <script>
+        const calendarContainer = document.getElementById('calendarContainer');
+        const toggleModeBtn = document.getElementById('toggleMode');
+        const monthViewBtn = document.getElementById('monthViewBtn');
+        const weekViewBtn = document.getElementById('weekViewBtn');
+        const dayViewBtn = document.getElementById('dayViewBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const currentPeriod = document.getElementById('currentPeriod');
+        const calendarContent = document.getElementById('calendarContent');
+
+        let currentView = 'month'; // 'month', 'week', 'day'
+        let currentDate = new Date();
+
+        // Toggle dark/light mode
+        toggleModeBtn.addEventListener('click', () => {
+            calendarContainer.classList.toggle('dark');
+            toggleModeBtn.textContent = calendarContainer.classList.contains('dark') ? 'Light Mode' : 'Dark Mode';
+        });
+
+        // View buttons
+        monthViewBtn.addEventListener('click', () => { currentView = 'month'; updateActiveView(); renderCalendar(); });
+        weekViewBtn.addEventListener('click', () => { currentView = 'week'; updateActiveView(); renderCalendar(); });
+        dayViewBtn.addEventListener('click', () => { currentView = 'day'; updateActiveView(); renderCalendar(); });
+
+        function updateActiveView() {
+            [monthViewBtn, weekViewBtn, dayViewBtn].forEach(btn => btn.classList.remove('active'));
+            if (currentView === 'month') monthViewBtn.classList.add('active');
+            if (currentView === 'week') weekViewBtn.classList.add('active');
+            if (currentView === 'day') dayViewBtn.classList.add('active');
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentView === 'month') {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+            } else if (currentView === 'week') {
+                currentDate.setDate(currentDate.getDate() - 7);
+            } else if (currentView === 'day') {
+                currentDate.setDate(currentDate.getDate() - 1);
+            }
+            renderCalendar();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentView === 'month') {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+            } else if (currentView === 'week') {
+                currentDate.setDate(currentDate.getDate() + 7);
+            } else if (currentView === 'day') {
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            renderCalendar();
+        });
+
+        function getMonthName(monthIndex) {
+            const months = ["Januar", "Februar", "März", "April", "Mai", "Juni",
+                "Juli", "August", "September", "Oktober", "November", "Dezember"];
+            return months[monthIndex];
+        }
+
+        // Einfache Feiertagsfunktion (für Deutschland)
+        function getHoliday(date) {
+            const day = date.getDate();
+            const month = date.getMonth() + 1; // 1-12
+            const holidays = {
+                "1-1": "Neujahr",
+                "5-1": "Tag der Arbeit",
+                "10-3": "Tag der Deutschen Einheit",
+                "12-25": "1. Weihnachtstag",
+                "12-26": "2. Weihnachtstag"
+            };
+            return holidays[month + '-' + day] || "";
+        }
+
+        function renderCalendar() {
+            if (currentView === 'month') {
+                renderMonthView();
+            } else if (currentView === 'week') {
+                renderWeekView();
+            } else if (currentView === 'day') {
+                renderDayView();
+            }
+        }
+
+        function renderMonthView() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            let startDayIndex = (firstDay.getDay() + 6) % 7; // Montag als erster Tag
+            let totalDays = lastDay.getDate();
+            let html = '<table class="month-table"><thead><tr>';
+            const daysOfWeek = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+            daysOfWeek.forEach(day => html += `<th>${day}</th>`);
+            html += '</tr></thead><tbody>';
+            let dayCounter = 1;
+            for (let i = 0; dayCounter <= totalDays; i++) {
+                html += '<tr>';
+                for (let j = 0; j < 7; j++) {
+                    if ((i === 0 && j < startDayIndex) || dayCounter > totalDays) {
+                        html += '<td></td>';
+                    } else {
+                        let date = new Date(year, month, dayCounter);
+                        let holiday = getHoliday(date);
+                        let holidayMark = holiday ? `<div class="holiday">${holiday}</div>` : '';
+                        html += `<td><div class="date-number">${dayCounter}</div>${holidayMark}</td>`;
+                        dayCounter++;
+                    }
+                }
+                html += '</tr>';
+            }
+            html += '</tbody></table>';
+            calendarContent.innerHTML = html;
+            currentPeriod.textContent = `${getMonthName(month)} ${year}`;
+        }
+
+        function renderWeekView() {
+            // Bestimme den Montag der aktuellen Woche
+            const current = new Date(currentDate);
+            const dayOfWeek = (current.getDay() + 6) % 7; // Montag als erster Tag
+            const monday = new Date(current);
+            monday.setDate(current.getDate() - dayOfWeek);
+            let html = '<div class="week-view">';
+            for (let i = 0; i < 7; i++) {
+                let dayDate = new Date(monday);
+                dayDate.setDate(monday.getDate() + i);
+                let options = { weekday: 'long', day: 'numeric', month: 'numeric', year: 'numeric' };
+                let dayString = dayDate.toLocaleDateString('de-DE', options);
+                let holiday = getHoliday(dayDate);
+                let holidayMark = holiday ? `<div class="holiday">${holiday}</div>` : '';
+                html += `<div class="week-day"><strong>${dayString}</strong>${holidayMark}</div>`;
+            }
+            html += '</div>';
+            calendarContent.innerHTML = html;
+            // Zeige die Wochen-Spanne an
+            const sunday = new Date(monday);
+            sunday.setDate(monday.getDate() + 6);
+            currentPeriod.textContent = `${monday.toLocaleDateString('de-DE')} - ${sunday.toLocaleDateString('de-DE')}`;
+        }
+
+        function renderDayView() {
+            let options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            let dayString = currentDate.toLocaleDateString('de-DE', options);
+            let holiday = getHoliday(currentDate);
+            let holidayMark = holiday ? `<div class="holiday">${holiday}</div>` : '';
+            let html = `<div class="day-view"><div class="day-detail"><strong>${dayString}</strong>${holidayMark}</div></div>`;
+            calendarContent.innerHTML = html;
+            currentPeriod.textContent = dayString;
+        }
+
+        // Initiale Darstellung
+        renderCalendar();
+    </script>
+</body>
+
+</html>
